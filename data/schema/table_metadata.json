@@ -1,0 +1,60 @@
+{
+  "tables": [
+    {
+      "name": "ningchao_revenue",
+      "description": "宁巢公寓营收月报",
+      "fields": [
+        {"name": "id", "type": "INTEGER", "aliases": ["编号"]},
+        {"name": "year_month", "type": "DATE", "aliases": ["年月", "月份", "时间", "日期"]},
+        {"name": "store_name", "type": "TEXT", "aliases": ["门店", "公寓名称", "门店名称"]},
+        {"name": "receivable", "type": "NUMERIC", "aliases": ["应收金额", "应收", "应收账款"]},
+        {"name": "received", "type": "NUMERIC", "aliases": ["实收金额", "实收"]},
+        {"name": "occupancy_days", "type": "INTEGER", "aliases": ["入住天数", "在租天数"]}
+      ],
+      "sample_rows": [
+        {"year_month": "2026-01", "store_name": "宁巢·东城公寓", "receivable": 580000, "received": 552000, "occupancy_days": 31},
+        {"year_month": "2026-02", "store_name": "宁巢·东城公寓", "receivable": 610000, "received": 585000, "occupancy_days": 28},
+        {"year_month": "2026-03", "store_name": "宁巢·东城公寓", "receivable": 595000, "received": 570000, "occupancy_days": 31},
+        {"year_month": "2026-01", "store_name": "宁巢·明石公寓", "receivable": 720000, "received": 698000, "occupancy_days": 31},
+        {"year_month": "2026-02", "store_name": "宁巢·明石公寓", "receivable": 705000, "received": 680000, "occupancy_days": 28},
+        {"year_month": "2026-01", "store_name": "宁巢·钱塘公寓", "receivable": 450000, "received": 432000, "occupancy_days": 31},
+        {"year_month": "2026-02", "store_name": "宁巢·钱塘公寓", "receivable": 468000, "received": 445000, "occupancy_days": 28}
+      ]
+    },
+    {
+      "name": "ningchao_rooms",
+      "description": "宁巢公寓房间信息表",
+      "fields": [
+        {"name": "id", "type": "INTEGER", "aliases": ["编号"]},
+        {"name": "store_name", "type": "TEXT", "aliases": ["门店", "公寓名称", "门店名称"]},
+        {"name": "room_count", "type": "INTEGER", "aliases": ["房间数量", "总房间数", "房源数"]},
+        {"name": "occupancy_rate", "type": "FLOAT", "aliases": ["出租率", "入住率"]},
+        {"name": "year_month", "type": "DATE", "aliases": ["年月", "月份"]}
+      ],
+      "sample_rows": [
+        {"year_month": "2026-01", "store_name": "宁巢·东城公寓", "room_count": 200, "occupancy_rate": 0.88},
+        {"year_month": "2026-02", "store_name": "宁巢·东城公寓", "room_count": 200, "occupancy_rate": 0.92},
+        {"year_month": "2026-01", "store_name": "宁巢·明石公寓", "room_count": 280, "occupancy_rate": 0.85},
+        {"year_month": "2026-02", "store_name": "宁巢·明石公寓", "room_count": 280, "occupancy_rate": 0.82},
+        {"year_month": "2026-01", "store_name": "宁巢·钱塘公寓", "room_count": 150, "occupancy_rate": 0.91},
+        {"year_month": "2026-02", "store_name": "宁巢·钱塘公寓", "room_count": 150, "occupancy_rate": 0.93}
+      ]
+    },
+    {
+      "name": "ningchao_stores",
+      "description": "宁巢公寓门店基础信息",
+      "fields": [
+        {"name": "id", "type": "INTEGER", "aliases": ["编号"]},
+        {"name": "store_name", "type": "TEXT", "aliases": ["门店", "公寓名称", "门店名称"]},
+        {"name": "city", "type": "TEXT", "aliases": ["城市", "所在城市"]},
+        {"name": "district", "type": "TEXT", "aliases": ["区域", "所在区域"]},
+        {"name": "open_date", "type": "DATE", "aliases": ["开业日期", "开业时间"]}
+      ],
+      "sample_rows": [
+        {"store_name": "宁巢·东城公寓", "city": "杭州", "district": "上城区", "open_date": "2023-06-01"},
+        {"store_name": "宁巢·明石公寓", "city": "杭州", "district": "上城区", "open_date": "2024-01-15"},
+        {"store_name": "宁巢·钱塘公寓", "city": "杭州", "district": "钱塘区", "open_date": "2023-09-01"}
+      ]
+    }
+  ]
+}

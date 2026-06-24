@@ -1,0 +1,25 @@
+[project]
+name = "nl2dsl"
+version = "0.1.0"
+description = "自然语言查数助手 — 多 Agent 协作的 NL2DSL 系统"
+requires-python = ">=3.12"
+dependencies = [
+    "langgraph>=0.2",
+    "langgraph-supervisor",
+    "langfuse",
+    "fastapi",
+    "uvicorn[standard]",
+    "supabase",
+    "instructor",
+    "openai",
+    "pydantic>=2",
+    "pandas",
+    "streamlit",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]

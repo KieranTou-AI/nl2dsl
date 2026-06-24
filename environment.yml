@@ -1,0 +1,22 @@
+name: nl2dsl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - langgraph>=0.2
+      - langgraph-supervisor
+      - langfuse
+      - fastapi
+      - uvicorn[standard]
+      - supabase
+      - instructor
+      - openai
+      - pydantic>=2
+      - pandas
+      - streamlit
+      - pytest
+      - pytest-asyncio
+      - python-dotenv
