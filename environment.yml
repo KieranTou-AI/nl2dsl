@@ -1,22 +1,127 @@
+# ============================================================
+# NL2DSL Conda 环境配置
+# ============================================================
+# 使用方法:
+#   conda env create -f environment.yml   # 创建环境
+#   conda activate nl2dsl                 # 激活环境
+#   conda env update -f environment.yml --prune  # 更新环境
+# ============================================================
+
 name: nl2dsl
+
+# ── 软件源优先级 ─────────────────────────────────────────────
+# conda-forge: 社区维护的巨型仓库，包最全、版本最新
+# defaults:    Anaconda 官方源，作为兜底
+# 优先级从上到下，先匹配 conda-forge，找不到再去 defaults
 channels:
   - conda-forge
   - defaults
+
+# ── 依赖清单 ─────────────────────────────────────────────────
 dependencies:
+  # ----- Conda 直接管理的底层依赖 -----
+  # Python 解释器本身，3.12 是目前最稳定的新版
   - python=3.12
+
+  # pip 包管理器，conda 装完基础环境后用 pip 装 Python 包
+  # 为什么不全用 conda？很多 LLM 相关包（langgraph 等）在 conda 仓库
+  # 里版本太旧或根本没有，走 PyPI（pip）更可靠
   - pip
+
+  # ----- pip 安装的 Python 业务依赖 -----
   - pip:
+      # ── 工作流编排 ─────────────────────────────────
+      # LangGraph: LangChain 团队出的有状态工作流引擎
+      # 我们用它的 StateGraph 构建 Supervisor → 3 个 Agent 的执行图
+      # >=0.2 版本有稳定的 checkpoint（多轮对话状态持久化）
       - langgraph>=0.2
+
+      # langgraph-supervisor: 官方多 Agent Supervisor 封装
+      # 提供 create_supervisor() 工厂函数，快速创建 Supervisor 路由模式
+      # 每个 Agent 是独立的 ReAct Agent（有自己的 tools + prompt）
       - langgraph-supervisor
+
+      # ── LLM 可观测性 ───────────────────────────────
+      # LangFuse: 开源 LLM 可观测性平台
+      # 部署方式（二选一）:
+      #   - LangFuse Cloud (cloud.langfuse.com): 免费层 5 万条 trace/月，注册即用
+      #   - Docker 自部署: 数据完全本地，需要 docker compose up
+      # 本项目学习期用 Cloud，上线后可切自部署
+      # 两个核心能力:
+      #   1. Tracing — 每条请求自动录下 Supervisor→Intent→Slot→Code 的输入输出
+      #   2. Prompt Management — Prompt 版本化 + 实验跑分对比
+      # LangGraph 原生支持，两行代码接入
       - langfuse
+
+      # ── 网络框架 ───────────────────────────────────
+      # FastAPI: 异步 HTTP 框架
+      # 为什么需要: Streamlit 是界面，LangGraph 是引擎——中间需要一层
+      # "桥梁"把两者连起来。FastAPI 就是这个桥梁
+      # 三个价值:
+      #   1. 前后端分离 — 以后想换飞书机器人，API 不用改
+      #   2. 独立测试 — curl/Postman 直接调 API 验证 Agent 效果
+      #   3. SSE 流式输出 — 前端能实时看到 CodeAgent 正在写的代码
       - fastapi
+
+      # Uvicorn: ASGI 服务器，负责跑 FastAPI 应用
+      # [standard] 额外装了 uvloop + httptools，性能更好
       - uvicorn[standard]
+
+      # ── 数据库 ─────────────────────────────────────
+      # Supabase Python SDK: 连接 Supabase PostgreSQL
+      # 这个项目里 Supabase 干两件事:
+      #   角色 1: 项目元数据库（评测集、会话记录、意图标签）
+      #   角色 2: 模拟数仓（宁巢营收表、门店表等业务数据）
       - supabase
+
+      # ── 结构化输出 ─────────────────────────────────
+      # Instructor: 在 OpenAI 客户端上包一层，让 LLM 输出强制符合
+      # Pydantic 模型。内部机制:
+      #   1. 把 Pydantic 模型转成 JSON Schema 塞进 Prompt
+      #   2. LLM 输出 JSON → 校验 → 不符合就自动 retry
+      #   3. 直到拿到合法结构才返回
+      # 每个 Agent 的输出都走 Instructor 保证格式正确
       - instructor
+
+      # ── LLM 调用 ───────────────────────────────────
+      # OpenAI Python SDK: 调 DeepSeek API 用的
+      # DeepSeek API 兼容 OpenAI 接口格式，所以直接用 OpenAI SDK
+      # base_url 指向 https://api.deepseek.com 即可
       - openai
+
+      # Pydantic v2: 数据校验框架
+      # 所有 Agent 的输出模型（IntentOutput, SlotOutput, CodeOutput）
+      # 都用 Pydantic BaseModel 定义，Instructor 用它做自动校验
+      # v2 比 v1 快 10-30 倍（Rust 核心）
       - pydantic>=2
+
+      # ── 数据处理 ───────────────────────────────────
+      # Pandas: CodeAgent 生成代码后的计算引擎
+      # LLM 生成的代码调用 data_query() 拿到 DataFrame
+      # 然后用 pandas 做:
+      #   - 环比计算: (curr - prev) / prev
+      #   - 排序: df.sort_values()
+      #   - 聚合: df.groupby().sum()
+      #   - 占比: df["x"] / df["x"].sum()
       - pandas
+
+      # ── 前端原型 ───────────────────────────────────
+      # Streamlit: 纯 Python 写前端，不需要 HTML/JS
+      # 两个页面:
+      #   1. 问答页 — 输入自然语言 → 看各 Agent 中间结果 → 最终代码
+      #   2. 评测页 — 选择评测桶 → 跑评测 → 看指标趋势
+      # 为什么不用 Gradio: Streamlit 组件更丰富，状态管理更直观
       - streamlit
+
+      # ── 测试框架 ───────────────────────────────────
+      # pytest: Python 最主流的测试框架
+      # pytest-asyncio: 让 pytest 支持 async/await 异步测试
+      #   代码库里 LangGraph workflow 是 async 的，测它需要这个
       - pytest
       - pytest-asyncio
+
+      # ── 环境变量 ───────────────────────────────────
+      # python-dotenv: 读 .env 文件加载环境变量
+      # 开发环境用 .env 存 API Key 等敏感信息，不提交到 git
+      # 生产环境直接用系统环境变量
       - python-dotenv

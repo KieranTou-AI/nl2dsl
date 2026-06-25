@@ -193,7 +193,19 @@ uvicorn src.main:app --reload   # 开发模式，代码改动自动重载
 
 ## 可观测性 — LangFuse
 
-开源 LLM 可观测性平台，Docker 一键自部署。覆盖两个核心场景：
+开源 LLM 可观测性平台。**学习期用 Cloud（cloud.langfuse.com）**，注册即用，免费层每月 5 万条 trace。生产环境数据敏感可切 Docker 自部署。
+
+### 两种部署方式
+
+| | LangFuse Cloud | Docker 自部署 |
+|---|---|---|
+| **安装** | 注册即用，零安装 | 需要 Docker，`docker compose up` |
+| **数据** | LangFuse 服务器（德国，GDPR 合规） | 完全本地 |
+| **免费额度** | 每月 5 万条 trace | 无限制（取决于硬盘） |
+| **维护** | 零维护 | 管理容器、升级版本、磁盘空间 |
+| **适用** | 学习项目、小团队 | 生产环境、敏感数据 |
+
+### 两个核心能力
 
 | 场景 | 功能 |
 |---|---|
@@ -205,7 +217,16 @@ LangGraph 原生支持，两行代码接入：
 ```python
 from langfuse.callback import CallbackHandler
 
-handler = CallbackHandler(host="http://localhost:3000")
+# LangFuse Cloud
+handler = CallbackHandler(
+    public_key="pk-lf-...",
+    secret_key="sk-lf-...",
+    host="https://cloud.langfuse.com"
+)
+
+# Docker 自部署
+# handler = CallbackHandler(host="http://localhost:3000")
+
 app.invoke(input, config={"callbacks": [handler]})
 ```
 
